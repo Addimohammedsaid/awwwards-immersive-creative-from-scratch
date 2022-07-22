@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run development",
     "backend:build": "node app.js",
     "backend:development": "nodemon app.js",
     "frontend:development": "webpack serve --progress --config webpack.config.development.js",
-    "frontend:build": "webpack --progress --config webpack.config.build.js"
+    "frontend:build": "webpack --progress --config webpack.config.build.js",
+    "start": "concurrently --kill-others \"npm run backend:development\" \"npm run frontend:development\""
   },
   "author": "",
   "license": "ISC",
@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "express": "^4.18.1",
-    "nodemon": "^2.0.19"
+    "nodemon": "^2.0.19",
+    "pug": "^3.0.2"
   }
 }
