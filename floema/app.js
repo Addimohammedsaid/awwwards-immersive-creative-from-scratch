@@ -3,8 +3,35 @@ const app = express();
 const path = require("path");
 const port = 3000;
 
+require("dotenv").config();
+
+const prismic = require("@prismicio/client");
+const PrismicDOM = require("prismic-dom");
+
+const initAPI = (req) => {
+  return prismic.getApi(process.env.PRISMIC_ENDPOINT, {
+    accessToken: process.env.PRISMIC_ACCESS_TOKEN,
+    req,
+  });
+};
+
+const handleLinkResolver = (doc) => {
+  return "/";
+};
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
+
+app.use((req, res, next) => {
+  res.locals.ctx = {
+    endpoint: process.env.PRISMIC_ENDPOINT,
+    linkResolver: handleLinkResolver,
+  };
+
+  res.locals.PrismicDOM = PrismicDOM;
+
+  next();
+});
 
 app.get("/", (req, res) => {
   res.render("base", {
@@ -18,13 +45,17 @@ app.get("/", (req, res) => {
 });
 
 app.get("/about", (req, res) => {
-  res.render("pages/about", {
-    meta: {
-      data: {
-        title: "About",
-        description: "About me",
-      },
-    },
+  initAPI(req).then((api) => {
+    api
+      .query([prismic.Predicates.any("document.type", ["metadata", "about"])])
+      .then((response) => {
+        const { results } = response;
+        const [about, meta] = results;
+        res.render("pages/about", {
+          about,
+          meta,
+        });
+      });
   });
 });
 
