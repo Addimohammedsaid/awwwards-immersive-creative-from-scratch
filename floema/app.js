@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+// const errorHandler = require("errorHandler");
 const path = require("path");
 const port = 3000;
 
@@ -59,14 +60,18 @@ app.get("/about", (req, res) => {
   });
 });
 
-app.get("/details/:id", (req, res) => {
+app.get("/details/:uid", async (req, res) => {
+  const api = await initAPI(req);
+  const meta = await api.getSingle("metadata");
+  const product = await api.getByUID("product", req.params.uid, {
+    fetchLinks: "collection.title",
+  });
+
+  console.log(product);
+
   res.render("pages/details", {
-    meta: {
-      data: {
-        title: "Contact",
-        description: "Contact me",
-      },
-    },
+    product,
+    meta,
   });
 });
 
