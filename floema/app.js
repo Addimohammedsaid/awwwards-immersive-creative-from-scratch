@@ -60,16 +60,13 @@ app.get("/about", (req, res) => {
   });
 });
 
-app.get("/details/:uid", async (req, res) => {
+app.get("/detail/:uid", async (req, res) => {
   const api = await initAPI(req);
   const meta = await api.getSingle("metadata");
   const product = await api.getByUID("product", req.params.uid, {
     fetchLinks: "collection.title",
   });
-
-  console.log(product);
-
-  res.render("pages/details", {
+  res.render("pages/detail", {
     product,
     meta,
   });
