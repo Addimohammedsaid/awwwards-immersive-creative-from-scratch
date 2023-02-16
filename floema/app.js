@@ -72,14 +72,15 @@ app.get("/detail/:uid", async (req, res) => {
   });
 });
 
-app.get("/collections/:id", (req, res) => {
+app.get("/collections", async (req, res) => {
+  const api = await initAPI(req);
+  const meta = await api.getSingle("metadata");
+  const collections = await api.query(
+    prismic.Predicates.at("document.type", "collection")
+  );
   res.render("pages/collections", {
-    meta: {
-      data: {
-        title: "Collection",
-        description: "Collection of my products",
-      },
-    },
+    meta,
+    collections: collections.results,
   });
 });
 
