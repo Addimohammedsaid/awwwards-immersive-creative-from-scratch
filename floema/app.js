@@ -75,12 +75,21 @@ app.get("/detail/:uid", async (req, res) => {
 app.get("/collections", async (req, res) => {
   const api = await initAPI(req);
   const meta = await api.getSingle("metadata");
-  const collections = await api.query(
-    prismic.Predicates.at("document.type", "collection")
+  const home = await api.getSingle("home");
+  const { results: collections } = await api.query(
+    prismic.Predicates.at("document.type", "collection"),
+    {
+      fetchLinks: "product.image",
+    }
   );
+
+  const labels = ["one", "two", "three", "four"];
+
   res.render("pages/collections", {
+    collections,
+    home,
     meta,
-    collections: collections.results,
+    labels,
   });
 });
 
