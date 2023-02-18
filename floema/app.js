@@ -1,13 +1,23 @@
+require("dotenv").config();
+
 const express = require("express");
+const bodyParser = require("body-parser");
+const methodOverride = require("method-override");
+const errorHandler = require("errorhandler");
+const logger = require("morgan");
+
 const app = express();
-// const errorHandler = require("errorHandler");
 const path = require("path");
 const port = 3000;
 
-require("dotenv").config();
-
 const prismic = require("@prismicio/client");
 const PrismicDOM = require("prismic-dom");
+
+app.use(logger("dev"));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(methodOverride());
+app.use(errorHandler());
 
 const initAPI = (req) => {
   return prismic.getApi(process.env.PRISMIC_ENDPOINT, {
@@ -17,6 +27,9 @@ const initAPI = (req) => {
 };
 
 const handleLinkResolver = (doc) => {
+  if (doc.type === "product") {
+    return `/detail/${doc.slug}`;
+  }
   return "/";
 };
 
@@ -28,53 +41,16 @@ app.use((req, res, next) => {
     endpoint: process.env.PRISMIC_ENDPOINT,
     linkResolver: handleLinkResolver,
   };
-
   res.locals.PrismicDOM = PrismicDOM;
-
+  res.locals.labels = ["one", "two", "three", "four"];
+  res.locals.Link = handleLinkResolver;
   next();
 });
 
-app.get("/", (req, res) => {
-  res.render("base", {
-    meta: {
-      data: {
-        title: "Home",
-        description: "Welcome to my website",
-      },
-    },
-  });
-});
-
-app.get("/about", (req, res) => {
-  initAPI(req).then((api) => {
-    api
-      .query([prismic.Predicates.any("document.type", ["metadata", "about"])])
-      .then((response) => {
-        const { results } = response;
-        const [about, meta] = results;
-        res.render("pages/about", {
-          about,
-          meta,
-        });
-      });
-  });
-});
-
-app.get("/detail/:uid", async (req, res) => {
+app.get("/", async (req, res) => {
   const api = await initAPI(req);
   const meta = await api.getSingle("metadata");
-  const product = await api.getByUID("product", req.params.uid, {
-    fetchLinks: "collection.title",
-  });
-  res.render("pages/detail", {
-    product,
-    meta,
-  });
-});
-
-app.get("/collections", async (req, res) => {
-  const api = await initAPI(req);
-  const meta = await api.getSingle("metadata");
+  const preloader = await api.getSingle("preloader");
   const home = await api.getSingle("home");
   const { results: collections } = await api.query(
     prismic.Predicates.at("document.type", "collection"),
@@ -82,14 +58,56 @@ app.get("/collections", async (req, res) => {
       fetchLinks: "product.image",
     }
   );
+  res.render("pages/home", {
+    collections,
+    home,
+    meta,
+    preloader,
+  });
+});
 
-  const labels = ["one", "two", "three", "four"];
+app.get("/about", async (req, res) => {
+  const api = await initAPI(req);
+  const meta = await api.getSingle("metadata");
+  const preloader = await api.getSingle("preloader");
+  const about = await api.getSingle("about");
+  res.render("pages/about", {
+    about,
+    meta,
+    preloader,
+  });
+});
 
+app.get("/detail/:uid", async (req, res) => {
+  const api = await initAPI(req);
+  const meta = await api.getSingle("metadata");
+  const preloader = await api.getSingle("preloader");
+  const product = await api.getByUID("product", req.params.uid, {
+    fetchLinks: "collection.title",
+  });
+  res.render("pages/detail", {
+    product,
+    preloader,
+    meta,
+  });
+});
+
+app.get("/collections", async (req, res) => {
+  const api = await initAPI(req);
+  const meta = await api.getSingle("metadata");
+  const preloader = await api.getSingle("preloader");
+  const home = await api.getSingle("home");
+  const { results: collections } = await api.query(
+    prismic.Predicates.at("document.type", "collection"),
+    {
+      fetchLinks: "product.image",
+    }
+  );
   res.render("pages/collections", {
     collections,
     home,
     meta,
-    labels,
+    preloader,
   });
 });
 
