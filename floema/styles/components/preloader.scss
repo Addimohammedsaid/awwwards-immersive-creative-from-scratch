@@ -1,12 +1,10 @@
 .preloader {
   @extend %cover;
+  @extend %center;
 
-  display: flex;
+  display: none;
 
-  align-items: center;
-  justify-content: center;
   text-align: center;
-
   background: $color-contessa;
   color: $color-quarter-spanish-white;
 }
