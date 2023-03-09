@@ -8,18 +8,24 @@ block content
     .detail_wrapper
       figure.detail_media
         img.detail_media_image(alt=product.data.image.alt src=product.data.image.url)
+
     .detail_information
       p.detail_information_collection=product.data.collections.data.title
+
       h1.detail_information_title=product.data.title
+
       .detail_information_content
         .detail_information_highlights
           each highlight in product.data.highlight
             svg.detail_information_highlight_icon
               use(xlink:href=`sprite-${highlight.highlight_icon.toLowerCase()}`)
-            span.detail_information_item_=highlight.highlights_text
+
+            span.detail_information_item_text=highlight.highlights_text.replace(/\n/, '<br>')
+
         .detail_information_list
           each item in product.data.informations
             p.detail_information_item
               strong.detail_information_item_title=item.informations_label
               span.detail_information_item_description=item.informations_description
+
         a.detail_information_link(href=product.data.link_url.url target='_blank')=product.data.link_text

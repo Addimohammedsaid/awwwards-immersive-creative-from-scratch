@@ -47,7 +47,8 @@
 .detail_information_highlight_icon {
 }
 
-.detail_information_item_text {
+.detail_information_highlight_text {
+  @extend %description-16;
 }
 
 .detail_information_list {
@@ -68,6 +69,7 @@
 }
 
 .detail_information_item_description {
+  @extend %description-16;
 }
 
 .detail_information_link {
